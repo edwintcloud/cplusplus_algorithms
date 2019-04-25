@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "buffer.h"
+#include "circular_buffer.h"
 
 int main() {
 
