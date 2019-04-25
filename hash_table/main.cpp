@@ -1,5 +1,5 @@
 #include <iostream>
-#include "linked_list.h"
+#include "../linked_list/linked_list.h"
 
 // bring std namespace into local scope
 using namespace std;
