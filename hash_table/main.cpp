@@ -1,18 +1,19 @@
 #include <iostream>
-#include "../linked_list/linked_list.h"
+#include "hash_table.h"
 
 // bring std namespace into local scope
 using namespace std;
 
 int main() {
     
-    // create a Linked_List
-    Linked_List<string> ll;
+    // create a Hash Table
+    Hash_Table<string, string> ht;
 
-    // append some data
-    ll.append("hello");
-    ll.append("world");
+    // add some elements to the Hash Table
+    ht.set("hello", "world");
+    ht.set("happy", "chicken");
+    ht.set("lasagna", "sunday");
 
-    // print ll
-    ll.print();
+    // print the Hash Table
+    ht.print();
 }

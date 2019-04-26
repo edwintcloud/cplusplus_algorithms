@@ -31,13 +31,11 @@ int main() {
     ll.print();
 
     // test if item is found
-    try {
-        cout << ll.find([](string x){ return x == "world"; }) << endl;
-        cout << ll.find([](string x){ return x == "hello"; }) << endl;
-    } catch(invalid_argument& e)
-    {
-        cout << e.what() << endl;
-    }
+    string* result1 = ll.find([](string x){ return x == "world"; });
+    string* result2 = ll.find([](string x){ return x == "hello"; });
+    result1 != nullptr && cout << *result1 << endl;
+    result2 != nullptr && cout << *result2 << endl;
+
 
     // test items method
     vector<string> r = ll.items();

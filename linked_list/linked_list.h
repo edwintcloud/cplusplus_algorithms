@@ -4,6 +4,7 @@
 // includes
 #include <memory>
 #include <vector>
+#include <optional>
 
 // bring std namespace into local scope
 using namespace std;
@@ -25,7 +26,8 @@ private:
 public:
 
     // Insert a node containing given data at the end of this Linked_List
-    void append(const T& data)
+    template<typename A>
+    void append(const A& data)
     {
         // check if list is empty
         if (size == 0)
@@ -67,7 +69,7 @@ public:
 
     // Find a node in this Linked_List that satisfies the given quality(function returning bool)
     // and return the data from that node
-    template<typename Func> T find(Func quality)
+    template<typename Func> T* find(Func quality)
     {
         // set cur_node to head of Linked_List
         Node* cur_node = head.get();
@@ -78,14 +80,14 @@ public:
             // check to see if node satisfies quality function
             if (quality(cur_node->data))
             {
-                return cur_node->data;
+                return &cur_node->data;
             }
             // set cur_node to next node
             cur_node = cur_node->next.get();
         }
 
-        // throw invalid_argument exception if node was not found
-        throw invalid_argument("no node found that satisfies the given function");
+        // return nullptr if not found
+        return nullptr;
     }
 
     // Remove the node containing the given data from this Linked_List
@@ -107,6 +109,10 @@ public:
                 if(cur_node == head.get())
                 {
                     // update head to next node
+                    // IMPORTANT: Here we are releasing the ownership of cur_node next
+                    // from it's unique_ptr. If we didn't use reset to assign the pointer
+                    // to head (another unique_ptr) and forgot to delete, this would cause
+                    // a memory leak!
                     head.reset(cur_node->next.release());
                     // set cur_node next to nullptr
                     // cur_node->next = nullptr;
@@ -119,6 +125,7 @@ public:
                 } else // otherwise
                 {
                     // set prev_node next to cur_node next (skipping node)
+                    // IMPORTANT: See above.
                     prev_node->next.reset(cur_node->next.release());
                     // set cur_node next to nullptr
                     cur_node->next = nullptr;
@@ -150,7 +157,7 @@ public:
         while (cur_node != nullptr)
         {
             // print cur_node to stdout
-            cout << cur_node->data << " -> ";
+            printf("%s -> ", cur_node->data.c_str());
 
             // set cur_node to next node
             cur_node = cur_node->next.get();
