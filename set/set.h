@@ -59,18 +59,6 @@ public:
 
     };
 
-    // Copy constructor
-    Set(const Set& _set)
-    {
-        // iterate _set.buckets.size() times
-        for(int i = 0; i < _set.buckets.size(); i++)
-        {
-            // initialize a unique_ptr to a new Linked_List
-            // for each new bucket
-            buckets.push_back(unique_ptr<Linked_List<T>>(new Linked_List<T>));
-        }
-    }
-
     // Returns the size of a set.
     size_t size()
     {
