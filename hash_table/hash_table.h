@@ -13,7 +13,7 @@ class Hash_Table
 {
 private:
     vector<unique_ptr<Linked_List<pair<K, V>>>> buckets;
-    size_t size = 0; // number of key-value entries
+    size_t _size = 0; // number of key-value entries
 protected:
 
     // Return a string hash using Hashing Function (based on djb2 algorithm)
@@ -55,6 +55,12 @@ public:
         }
     };
 
+    // Return the size of this Hash Table
+    size_t size()
+    {
+        return _size;
+    }
+
     // Print the items in this Hash_Table to stdout
     void print()
     {
@@ -87,13 +93,58 @@ public:
         } else
         {
             // increment size otherwise
-            size++;
+            _size++;
         }
 
         pair<K, V> data = {key, value};
 
         // insert key-value into Hash_Table in either case
         (*ll)->append(data);
+    }
+
+    // Return the value associated with a given key
+    V get(K key)
+    {
+        // find the bucket that the given key belongs to
+        unique_ptr<Linked_List<pair<K, V>>>* ll = &buckets[get_bucket_index(key)];
+
+        // find the entry in ll
+        pair<K, V>* entry = (*ll)->find([key](pair<K, V> x){ return x.first == key; });
+
+        // return value if not nullptr
+        if(entry != nullptr)
+        {
+            return (*entry).second;
+        }
+
+        // throw invalid argument exception if key not found
+        throw invalid_argument("E001: Invalid Arguments specified for method. Key was not found in Hash Table.");
+    }
+
+    // Remove the given key and its associated value
+    void remove(K key)
+    {
+        // find the bucket that the given key belongs to
+        unique_ptr<Linked_List<pair<K, V>>>* bucket = &buckets[get_bucket_index(key)];
+
+        // find the entry in bucket
+        pair<K, V>* entry = (*bucket)->find([key](pair<K, V> x){ return x.first == key; });
+
+        // return value if not nullptr
+        if(entry != nullptr)
+        {
+            // remove item from bucket
+            (*bucket)->remove(*entry);
+
+            // decrement size for each entry removed
+            _size--;
+
+        } else // otherwise
+        {
+            // throw invalid argument exception if key not found
+            throw invalid_argument("E001: Invalid Arguments specified for method. Key was not found in Hash Table.");
+        }
+        
     }
 };
 
