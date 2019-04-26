@@ -41,4 +41,26 @@ int main() {
 
     // print Hash Table
     ht.print();
+
+    // test contains
+    printf("Does the Hash Table contain lasagna: %s\n", ht.contains("lasagna") ? "true" : "false");
+    printf("Does the Hash Table contain happy: %s\n", ht.contains("happy") ? "true" : "false");
+
+    // trigger a resize
+    ht.set("one", "world");
+    ht.set("two", "chicken");
+    ht.set("three", "sunday");
+    ht.set("four", "world");
+    ht.set("five", "chicken");
+    ht.set("six", "sunday");
+    ht.set("seven", "world");
+    ht.set("eight", "chicken");
+    ht.set("nine", "sunday");
+    ht.set("liver", "sunday");
+    ht.set("september", "sunday");
+    ht.set("zilo", "sunday");
+
+    // print Hash Table
+    ht.print();
 }
+

@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <functional>
 #include "../linked_list/linked_list.h"
 
 using namespace std;
@@ -16,38 +17,52 @@ private:
     size_t _size = 0; // number of key-value entries
 protected:
 
-    // Return a string hash using Hashing Function (based on djb2 algorithm)
-    uint16_t compute_hash(string data)
-    {
-        // initialize hash to 5381 (8th prime)
-        uint16_t hash = 5381;
-
-        // iterate over data string
-        for(char& c : data)
-        {
-            hash = (hash << 5) + hash + int(c);
-        }
-
-        // return computed hash
-        return hash;
-    }
-
     // Return bucket index for key
     uint8_t get_bucket_index(K key)
     {
-        // convert key to string
-        string strKey = (string)key;
+        // generate hash
+        uint16_t computed_hash = hash<K>{}(key);
 
-        // we can use & bitwise to find mod for powers of two
-        return compute_hash(strKey) & (buckets.size()-1);
+        // use hash to find index
+        return computed_hash % buckets.size();
+    }
+
+    // Resize this Hash Table's buckets and rehash all key-value entries.
+    void resize()
+    {
+        // compute new_size
+        size_t new_size = buckets.size() * 2;
+
+        // get all items in Hash Table
+        vector<pair<K, V>> table_items = items();
+
+        // clear buckets vector, deleting all unique_ptr
+        buckets.clear();
+
+        // reset _size to 0
+        _size = 0;
+
+        // create buckets of Linked_List
+        for(int i=0; i < new_size; i++)
+        {
+            // create a unique_ptr to a new Linked_List and
+            // add to buckets vector array
+            buckets.push_back(unique_ptr<Linked_List<pair<K, V>>>(new Linked_List<pair<K, V>>));
+        }
+        
+        // hash items
+        for(int i=0;i < table_items.size();i++)
+        {
+            set(table_items[i].first, table_items[i].second);
+        }
     }
 
 public:
 
-    Hash_Table()
+    Hash_Table(size_t num_buckets = 11) 
     {
         // create buckets of Linked_List
-        for(int i=0;i < 9;i++)
+        for(int i=0; i < num_buckets; i++)
         {
             // create a unique_ptr to a new Linked_List and
             // add to buckets vector array
@@ -59,6 +74,21 @@ public:
     size_t size()
     {
         return _size;
+    }
+
+    // Returns vector of all items in this Hash Table.
+    vector<pair<K, V>> items()
+    {
+        vector<pair<K, V>> result;
+        for(int i=0;i < buckets.size();i++)
+        {
+            vector<pair<K,V>> bucket = buckets[i]->items();
+            for (int j=0;j < bucket.size(); j++)
+            {
+                result.push_back(bucket[j]);
+            }
+        }
+        return result;
     }
 
     // Print the items in this Hash_Table to stdout
@@ -100,6 +130,9 @@ public:
 
         // insert key-value into Hash_Table in either case
         (*ll)->append(data);
+
+        // if load factor exceeds .66, resize table
+        if(float(_size/buckets.size()) > 0.66) resize();
     }
 
     // Return the value associated with a given key
@@ -145,6 +178,22 @@ public:
             throw invalid_argument("E001: Invalid Arguments specified for method. Key was not found in Hash Table.");
         }
         
+    }
+
+    // Returns true or false depending on if specified key is found in this Hash Table.
+    bool contains(K key)
+    {
+        // find the bucket that the given key belongs to
+        unique_ptr<Linked_List<pair<K, V>>>* bucket = &buckets[get_bucket_index(key)];
+
+        // find the entry in bucket
+        pair<K, V>* entry = (*bucket)->find([key](pair<K, V> x){ return x.first == key; });
+
+        // return true if entry is not nullptr
+        if(entry != nullptr) return true;
+
+        // otherwise return false
+        return false;
     }
 };
 
