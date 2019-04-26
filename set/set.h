@@ -13,7 +13,7 @@ private:
     vector<unique_ptr<Linked_List<T>>> buckets;
     size_t _size = 0; // number of items in the set
     size_t _intial_num_buckets = 11; // initial number of buckets
-protected:
+
     // Returns bucket index for specified entry.
     size_t _get_index(T entry)
     {
@@ -21,6 +21,29 @@ protected:
         size_t _hash = hash<T>{}(entry);
         // return the remainder of _hash divided by number of buckets
         return _hash % buckets.size();
+    }
+
+    // Resizes a set's buckets and rehashes all entries.
+    void _resize()
+    {
+        // compute new bucket size (double the previous size)
+        size_t _new_size = buckets.size() * 2;
+        // create a temporary copy of all items in the set
+        vector<T> _temp_items = items();
+        // clear buckets vector, deleting all entries (Linked_List's will be
+        // automatically deallocated by unique_ptr's deconstructor)
+        buckets.clear();
+        // reset size to 0
+        _size = 0;
+        // iterate new_size number of times
+        for(int i = 0; i < _new_size; i++)
+        {
+            // initialize a unique_ptr to a new Linked_List
+            // for each new bucket
+            buckets.push_back(unique_ptr<Linked_List<T>>(new Linked_List<T>));
+        }
+        // add all items from _temp_items back into the set
+        for(T entry : _temp_items) add(entry);
     }
 public:
     // Default constructor initializes vector of buckets of default size.
@@ -114,6 +137,9 @@ public:
         }
         // append entry to end of bucket
         (*bucket)->append(entry);
+
+        // if load factor exceeds .66, perform a resize
+        if(float(_size/buckets.size()) > 0.66) _resize();
     }
 
     // Removes an entry from a set.
@@ -150,7 +176,8 @@ public:
         return false;
     }
 
-    // Returns a new set that is the union of two sets. Sets must be of same type.
+    // Returns a new set containing all entries from a set and entries from the
+    // specified other_set . Sets must be of the same type.
     Set union_(Set& other_set)
     {
         // create new set
@@ -161,6 +188,86 @@ public:
         for(T entry : other_set.items()) result.add(entry);
         // return result set
         return result;
+    }
+
+    // Returns a new set containing entries from a set and specified other_set
+    // that are in both sets. Sets must be of the same type.
+    Set intersection_(Set& other_set)
+    {
+        // create new set
+        Set<T> result;
+        // if this set has more items than other_set
+        if(_size > other_set._size)
+        {
+            // iterate over entries in this set
+            for(T entry : items())
+            {
+                // if other_set contains the current entry, add
+                // entry to result set
+                if(other_set.contains(entry)) result.add(entry);
+
+            }
+        } else // if other_set has more items than this set
+        {
+            // iterate over entries in other_set
+            for(T entry : other_set.items())
+            {
+                // if this set contains the current entry, add
+                // entry to result set
+                if(contains(entry)) result.add(entry);
+            }
+        }
+        // return result set
+        return result;
+    }
+
+    // Returns a new set containing entries from a set that are not in the specified
+    // other_set. Sets must be of the same type.
+    Set difference_(Set& other_set)
+    {
+        // create new set
+        Set<T> result;
+        // iterate over entries in this set
+        for(T entry : items())
+        {
+            // if current entry is not found in other_set,
+            // add entry to result set
+            if(!other_set.contains(entry)) result.add(entry);
+        }
+        // return result set
+        return result;
+    }
+
+    // Returns true if specified other_set is a subset of a set, otherwise returns false.
+    // Sets must be of the same type.
+    bool is_subset(Set& other_set)
+    {
+        // iterate over entries in this set
+        for(T entry : items())
+        {
+            // if current entry is not found in other_set, return false
+            if(!other_set.contains(entry)) return false;
+        }
+        // if all entries from this set are found in other_set, return true
+        return true;
+    }
+
+    // Overload | operator with union operation for two sets.
+    Set operator|(Set& other_set)
+    {
+        return union_(other_set);
+    }
+
+    // Overload & operator with intersection operation for two sets.
+    Set operator&(Set& other_set)
+    {
+        return intersection_(other_set);
+    }
+
+    // Overload - operator with difference operation for two sets.
+    Set operator-(Set& other_set)
+    {
+        return difference_(other_set);
     }
 };
 
